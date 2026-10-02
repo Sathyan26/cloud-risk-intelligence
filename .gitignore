@@ -1,0 +1,24 @@
+venv/
+__pycache__/
+*.pyc
+.env
+uvicorn_*.log
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# ML artifacts generated at runtime, not source
+ml/models/
+ml/reports/
+
+# Generated data, reproducible via data_pipeline/generate_data.py
+data/raw/
+
+# Terraform
+infrastructure/terraform/.terraform/
+infrastructure/terraform/build/
+infrastructure/terraform/*.tfstate
+infrastructure/terraform/*.tfstate.*
+infrastructure/terraform/terraform.tfvars
+infrastructure/terraform/*.tfplan

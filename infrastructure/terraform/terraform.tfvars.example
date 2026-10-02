@@ -1,0 +1,5 @@
+aws_region   = "us-east-1"
+project_name = "risk-intel"
+db_username  = "risk_app"
+db_password  = "replace-with-a-real-secret-never-commit-this"
+db_name      = "risk_intel"

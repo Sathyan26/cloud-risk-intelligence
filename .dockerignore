@@ -1,0 +1,10 @@
+venv/
+frontend/
+.git/
+.env
+data/
+ml/models/
+ml/reports/
+__pycache__/
+*.pyc
+uvicorn_*.log

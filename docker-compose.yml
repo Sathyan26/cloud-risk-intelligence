@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: risk_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_local}
+      POSTGRES_DB: risk_intel
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U risk_app -d risk_intel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://risk_app:${POSTGRES_PASSWORD:-changeme_local}@postgres:5432/risk_intel
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Not started by `docker compose up` -- run on demand with:
+  #   docker compose --profile tools run --rm pipeline
+  pipeline:
+    build: .
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://risk_app:${POSTGRES_PASSWORD:-changeme_local}@postgres:5432/risk_intel
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "python data_pipeline/generate_data.py &&
+             python -m data_pipeline.load_raw &&
+             python data_pipeline/validate_and_load.py &&
+             python -m ml.evaluation_report"
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
